@@ -13,9 +13,34 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "solution-items", "solution-
 		NextR-Compiler.sln = NextR-Compiler.sln
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NextR-Compiler", "src\NextR-Compiler\NextR-Compiler.csproj", "{6A23C52D-661C-4638-A5F5-514E435C969D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp", "src\ConsoleApp\ConsoleApp.csproj", "{F2ED9A07-D43D-40E7-97A7-C344AB05418F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NextR-Compiler.Tests", "tests\NextR-Compiler.Tests\NextR-Compiler.Tests.csproj", "{45F20B82-A3BB-4E86-83C4-8FD6A7D75168}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6A23C52D-661C-4638-A5F5-514E435C969D} = {8EB498B3-4921-4A56-9780-83AB54E000D7}
+		{F2ED9A07-D43D-40E7-97A7-C344AB05418F} = {8EB498B3-4921-4A56-9780-83AB54E000D7}
+		{45F20B82-A3BB-4E86-83C4-8FD6A7D75168} = {AD37807A-57F0-4082-A1AD-15266BEA2E3B}
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6A23C52D-661C-4638-A5F5-514E435C969D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A23C52D-661C-4638-A5F5-514E435C969D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A23C52D-661C-4638-A5F5-514E435C969D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A23C52D-661C-4638-A5F5-514E435C969D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2ED9A07-D43D-40E7-97A7-C344AB05418F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2ED9A07-D43D-40E7-97A7-C344AB05418F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2ED9A07-D43D-40E7-97A7-C344AB05418F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2ED9A07-D43D-40E7-97A7-C344AB05418F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{45F20B82-A3BB-4E86-83C4-8FD6A7D75168}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45F20B82-A3BB-4E86-83C4-8FD6A7D75168}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45F20B82-A3BB-4E86-83C4-8FD6A7D75168}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45F20B82-A3BB-4E86-83C4-8FD6A7D75168}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
