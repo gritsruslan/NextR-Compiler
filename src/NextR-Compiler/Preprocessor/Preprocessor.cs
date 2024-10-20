@@ -19,7 +19,6 @@ class Preprocessor(string sourceCode)
 
 	private char GetChar(int position) => position < sourceCode.Length ? sourceCode[position] : '\0';
 
-	//TODO
 	private string RemoveSingleLineComments(string code)
 	{
 		const char slash = '/';
@@ -61,9 +60,44 @@ class Preprocessor(string sourceCode)
 		return codeSb.ToString();
 	}
 
-	//TODO
 	private string RemoveMultiLineComments(string code)
 	{
-		throw new NotImplementedException();
+		const char slash = '/';
+		const char doubleQuote = '"';
+		const char star = '*';
+
+		var codeSb = new StringBuilder();
+
+		bool isInMultiLineComment = false;
+		bool isInStringLiteral = false;
+
+		for (int pos = 0; pos < code.Length; pos++)
+		{
+			var current = GetChar(pos);
+			var next = GetChar(pos + 1);
+
+			if (current == doubleQuote && !isInMultiLineComment &&
+			    (pos == 0 || code[pos - 1] != '\\')) // skip if escape character
+				isInStringLiteral = !isInStringLiteral;
+
+			if (!isInMultiLineComment && !isInStringLiteral && current == slash && next == star)
+			{
+				pos++;
+				isInMultiLineComment = true;
+				continue;
+			}
+
+			if (isInMultiLineComment && !isInStringLiteral && current == star && next == slash)
+			{
+				pos++;
+				isInMultiLineComment = false;
+				continue;
+			}
+
+			if(!isInMultiLineComment)
+				codeSb.Append(current);
+		}
+
+		return codeSb.ToString();
 	}
 }
