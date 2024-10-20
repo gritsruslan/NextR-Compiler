@@ -11,6 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "solution-items", "solution-
 		.gitignore = .gitignore
 		LICENSE = LICENSE
 		NextR-Compiler.sln = NextR-Compiler.sln
+		README.md = README.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NextR-Compiler", "src\NextR-Compiler\NextR-Compiler.csproj", "{6A23C52D-661C-4638-A5F5-514E435C969D}"
