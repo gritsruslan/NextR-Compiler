@@ -1,4 +1,5 @@
 using NextR_Compiler.Common;
+using NextR_Compiler.ExtensionMethods;
 using NextR_Compiler.Tokens;
 
 namespace NextR_Compiler.LexicalAnalyzer;
@@ -39,14 +40,87 @@ public class LexicalAnalyzer(string code)
 	private void AddConvertErrorToDiagnostics(string type, string valueString, int position ) =>
 		_diagnostics.Add($"ERROR : Can't cast token \"{valueString}\" to type {type} in position {position}");
 
+	private void SkipWhitespaces()
+	{
+		while(Current.IsWhitespace())
+			Next();
+	}
+
 	public IEnumerable<Token> TokenizeCode()
 	{
+		var resultTokens = new List<Token>();
 
+		while (true)
+		{
+			var token = NextToken();
+
+			if (token.Type == TokenType.EndOfFile)
+				break;
+
+			resultTokens.Add(token);
+
+			SkipWhitespaces();
+		}
+
+		return resultTokens;
 	}
 
 	private Token NextToken()
 	{
+		SkipWhitespaces();
 
+		if (Current == '\0')
+			return new NonLiteralToken(TokenType.EndOfFile, Current, '\0'.ToString());
+
+
+		//If current token is string literal (like "Hello, world!")
+		var stringTokenOpt = TokenizeIfStringLiteral();
+		if (stringTokenOpt.IsSome)
+			return stringTokenOpt.Unwrap();
+
+		//If current token is char literal (like 'n', '\t')
+		var charTokenOpt = TokenizeIfCharLiteral();
+		if (charTokenOpt.IsSome)
+			return charTokenOpt.Unwrap();
+
+		//If current token is double operator (like "+=" "-=" etc)
+		var doubleOperatorOpt = TokenizeIfDoubleOperator();
+		if (doubleOperatorOpt.IsSome)
+			return doubleOperatorOpt.Unwrap();
+
+		//If current token is any number token (int, uint or float)
+		var numberTokenOpt = TokenizeIfNumberLiteral();
+		if (numberTokenOpt.IsSome)
+			return numberTokenOpt.Unwrap();
+
+		//If current token is solo separator (like '+', '-', '=', '*', '{', '}' etc)
+		if (IsSeparator(Current))
+		{
+			var separator = Current;
+			var separatorPosition = _position;
+			var separatorTokenType = StaticTokenizer.GetTokenTypeIfSeparator(separator);
+			Next();
+			return new NonLiteralToken(separatorTokenType, separatorPosition, separator.ToString());
+		}
+
+		var tokenString = string.Empty;
+		var startPosition = _position;
+
+		while (!IsSeparator(Current) && Current != '\0')
+		{
+			tokenString += Current;
+			Next();
+		}
+
+		//if token is keyword
+		var keywordTokenOpt = TokenizeIfKeyword(tokenString, startPosition);
+		if (keywordTokenOpt.IsSome)
+			return keywordTokenOpt.Unwrap();
+
+		Next();
+
+		//other tokens marked as identifiers
+		return new NonLiteralToken(TokenType.Identifier, startPosition, tokenString);
 	}
 
 	private Option<LiteralToken> TokenizeIfStringLiteral()
@@ -64,10 +138,10 @@ public class LexicalAnalyzer(string code)
 
 	}
 
+	/*
 	private Option<LiteralToken> TokenizeIfDoubleLiteral()
-	{
-
-	}
+	{ }
+	*/
 
 	private Option<LiteralToken> TokenizeIfFloatLiteral()
 	{
