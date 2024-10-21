@@ -4,9 +4,9 @@ using NextR_Compiler.Tokens;
 namespace NextR_Compiler.LexicalAnalyzer;
 
 #if DEBUG
-public
+public static
 #else
-internal
+internal static
 #endif
 class StaticTokenizer
 {

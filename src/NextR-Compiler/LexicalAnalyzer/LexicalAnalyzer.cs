@@ -220,6 +220,8 @@ class LexicalAnalyzer(string code)
 
 	private char CheckCurrentEscapeSequence()
 	{
+		HashSet<char> escapeSequences = ['\n', '\t', '\\', '\'', '\"', '\r', '\0'];
+
 		var currentEscapedToken = Current switch
 		{
 			'n' => '\n',
@@ -232,7 +234,7 @@ class LexicalAnalyzer(string code)
 			_ => Current
 		};
 
-		if (currentEscapedToken is not ('\n' or '\t' or '\\' or  '\'' or '\"' or '\r' or '\0'))
+		if (!escapeSequences.Contains(currentEscapedToken))
 		{
 			_diagnostics.Add($"ERROR: Invalid escape sequence '\\{Current}' at position {_position}.");
 		}
@@ -361,7 +363,7 @@ class LexicalAnalyzer(string code)
 		var startPosition = _position;
 		var currentChar = Current;
 
-		List<char> operators = ['+','-','*' ,'/', '%' ,'!' , '>' , '<', '='];
+		HashSet<char> operators = ['+','-','*' ,'/', '%' ,'!' , '>' , '<', '='];
 
 		if (!operators.Contains(currentChar)||
 		    startPosition + 1 >= code.Length)
