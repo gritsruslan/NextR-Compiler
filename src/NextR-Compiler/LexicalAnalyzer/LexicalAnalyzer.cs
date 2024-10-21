@@ -361,7 +361,7 @@ class LexicalAnalyzer(string code)
 		var startPosition = _position;
 		var currentChar = Current;
 
-		List<char> operators = ['*' ,'/', '%' ,'!' , '>' , '<', '='];
+		List<char> operators = ['+','-','*' ,'/', '%' ,'!' , '>' , '<', '='];
 
 		if (!operators.Contains(currentChar)||
 		    startPosition + 1 >= code.Length)
