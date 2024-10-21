@@ -51,7 +51,7 @@ class LexicalAnalyzer(string code)
 			Next();
 	}
 
-	public IEnumerable<Token> TokenizeCode()
+	public List<Token> TokenizeCode()
 	{
 		var resultTokens = new List<Token>();
 
