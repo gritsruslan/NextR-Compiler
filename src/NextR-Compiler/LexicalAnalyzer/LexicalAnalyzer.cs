@@ -242,7 +242,56 @@ public class LexicalAnalyzer(string code)
 
 	private Option<LiteralToken> TokenizeIfNumberLiteral()
 	{
+		const char uintMarker = 'u';
+		const char floatMarker = 'f';
+		const char dot = '.';
 
+		if (!char.IsDigit(Current))
+			return Option<LiteralToken>.None;
+
+		bool hasDot = false;
+		bool hasUintMarker = false;
+		bool hasFloatMarker = false;
+
+		var valueStringBuilder = new StringBuilder();
+		int startPosition = _position;
+
+		while (char.IsDigit(Current) || Current == dot ||
+		       Current == uintMarker || Current == floatMarker)
+		{
+			if (Current == dot)
+			{
+				if (hasDot)
+					break;
+				hasDot = true;
+			}
+			else if (Current == uintMarker)
+			{
+				hasUintMarker = true;
+				valueStringBuilder.Append(uintMarker);
+				Next();
+				break;
+			}
+			else if (Current == floatMarker)
+			{
+				hasFloatMarker = true;
+				valueStringBuilder.Append(floatMarker);
+				Next();
+				break;
+			}
+
+			valueStringBuilder.Append(Current);
+			Next();
+		}
+
+		string valueString = valueStringBuilder.ToString();
+
+		if (hasFloatMarker || hasDot)
+			return TokenizeFloatLiteral(valueString, startPosition);
+		if (hasUintMarker)
+			return TokenizeUintLiteral(valueString, startPosition);
+
+		return TokenizeIntLiteral(valueString, startPosition);
 	}
 
 	/*
@@ -250,17 +299,17 @@ public class LexicalAnalyzer(string code)
 	{ }
 	*/
 
-	private Option<LiteralToken> TokenizeIfFloatLiteral()
+	private Option<LiteralToken> TokenizeFloatLiteral(string floatString, int startPosition)
 	{
 
 	}
 
-	private Option<LiteralToken> TokenizeIfUintLiteral()
+	private Option<LiteralToken> TokenizeUintLiteral(string uintString, int startPosition)
 	{
 
 	}
 
-	private Option<LiteralToken> TokenizeIfIntLiteral()
+	private Option<LiteralToken> TokenizeIntLiteral(string intString, int startPosition)
 	{
 
 	}
