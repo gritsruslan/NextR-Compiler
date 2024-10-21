@@ -348,6 +348,31 @@ public class LexicalAnalyzer(string code)
 
 	private Option<NonLiteralToken> TokenizeIfDoubleOperator()
 	{
+		var startPosition = _position;
+		var currentChar = Current;
 
+		if (currentChar is not ('+' or '-' or '*' or '/' or '%' or '!' or '>' or '<' or '=') ||
+		    startPosition + 1 >= _code.Length)
+			return Option<NonLiteralToken>.None;
+
+		if(!_code[startPosition + 1].Equals('='))
+			return Option<NonLiteralToken>.None;
+
+		var tokenType = Current switch
+		{
+			'+' => TokenType.PlusEquals,
+			'-' => TokenType.MinusEquals,
+			'*' => TokenType.MultiplyEquals,
+			'/' => TokenType.DivideEquals,
+			'%' => TokenType.RemainderDivEquals,
+			'>' => TokenType.GreaterOrEqual,
+			'<' => TokenType.LessOrEqual,
+			'!' => TokenType.BoolNoEquals,
+			'=' => TokenType.BoolEquals,
+			_ => throw new Exception()
+		};
+
+		Next(2);
+		return new NonLiteralToken(tokenType, startPosition, currentChar + "=");
 	}
 }
