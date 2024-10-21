@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using NextR_Compiler.Common;
 using NextR_Compiler.ExtensionMethods;
@@ -301,7 +302,16 @@ public class LexicalAnalyzer(string code)
 
 	private Option<LiteralToken> TokenizeFloatLiteral(string floatString, int startPosition)
 	{
+		string floatStringLiteral = floatString;
 
+		if (floatString.EndsWith('f'))
+			floatStringLiteral = floatStringLiteral[0..^1];
+
+		if (float.TryParse(floatStringLiteral,NumberStyles.Float, CultureInfo.InvariantCulture, out var floatValue))
+			return new LiteralToken(TokenType.FloatLiteral, startPosition, floatString, floatValue);
+
+		AddConvertErrorToDiagnostics("float", floatString, startPosition);
+		return Option<LiteralToken>.None;
 	}
 
 	private Option<LiteralToken> TokenizeUintLiteral(string uintString, int startPosition)
