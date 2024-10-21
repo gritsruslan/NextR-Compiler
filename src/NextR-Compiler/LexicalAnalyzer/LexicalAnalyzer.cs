@@ -6,8 +6,12 @@ using NextR_Compiler.Tokens;
 
 namespace NextR_Compiler.LexicalAnalyzer;
 
-
-public class LexicalAnalyzer(string code)
+#if DEBUG
+public
+#else
+internal
+#endif
+class LexicalAnalyzer(string code)
 {
 	public IReadOnlyList<string> GetDiagnostics() => _diagnostics.AsReadOnly();
 

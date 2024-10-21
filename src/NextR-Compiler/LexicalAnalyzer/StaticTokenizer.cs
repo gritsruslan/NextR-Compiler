@@ -3,9 +3,17 @@ using NextR_Compiler.Tokens;
 
 namespace NextR_Compiler.LexicalAnalyzer;
 
-public class StaticTokenizer
+#if DEBUG
+public
+#else
+internal
+#endif
+class StaticTokenizer
 {
-	public static readonly Dictionary<char, TokenType> SeparatorsTypesDictionary = new()
+#if DEBUG
+public
+#endif
+	static readonly Dictionary<char, TokenType> SeparatorsTypesDictionary = new()
     {
         { '+', TokenType.Plus },
         { '-', TokenType.Minus },
@@ -28,7 +36,10 @@ public class StaticTokenizer
         { '<', TokenType.Less},
     };
 
-    public static readonly Dictionary<string, TokenType> KeywordsTypesDictionary = new()
+#if DEBUG
+public
+#endif
+    static readonly Dictionary<string, TokenType> KeywordsTypesDictionary = new()
     {
         { "int", TokenType.IntKeyword },
         { "uint", TokenType.UintKeyword },
