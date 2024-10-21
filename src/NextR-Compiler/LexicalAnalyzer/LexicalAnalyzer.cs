@@ -330,7 +330,10 @@ public class LexicalAnalyzer(string code)
 
 	private Option<LiteralToken> TokenizeIntLiteral(string intString, int startPosition)
 	{
+		if(int.TryParse(intString, out var intValue))
+			return new LiteralToken(TokenType.IntLiteral, startPosition, intString, intValue);
 
+		return Option<LiteralToken>.None;
 	}
 
 	private Option<NonLiteralToken> TokenizeIfKeyword(string tokenString, int startPosition)
