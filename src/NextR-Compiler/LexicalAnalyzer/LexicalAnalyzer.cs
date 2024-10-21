@@ -338,7 +338,12 @@ public class LexicalAnalyzer(string code)
 
 	private Option<NonLiteralToken> TokenizeIfKeyword(string tokenString, int startPosition)
 	{
+		var tokenType = StaticTokenizer.GetTokenTypeIfKeyword(tokenString);
 
+		if (tokenType.IsSome)
+			return new NonLiteralToken(tokenType.Unwrap(), startPosition, tokenString);
+
+		return Option<NonLiteralToken>.None;
 	}
 
 	private Option<NonLiteralToken> TokenizeIfDoubleOperator()
