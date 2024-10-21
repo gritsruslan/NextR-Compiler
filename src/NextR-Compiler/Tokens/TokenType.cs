@@ -73,4 +73,5 @@ public enum TokenType
 	// Other
 	Identifier,
 	EndOfFile,
+	StructKeyword
 }
