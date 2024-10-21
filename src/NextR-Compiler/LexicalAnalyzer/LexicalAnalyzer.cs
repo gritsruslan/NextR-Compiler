@@ -184,7 +184,60 @@ public class LexicalAnalyzer(string code)
 
 	private Option<LiteralToken> TokenizeIfCharLiteral()
 	{
+		const char singleQuote = '\'';
+		const char backSlash = '\\';
 
+		if (Current != singleQuote)
+			return Option<LiteralToken>.None;
+
+		var startPosition = _position;
+		Next();
+
+		char charValue;
+		if (Current == backSlash)
+		{
+			Next();
+
+			charValue = Current switch
+			{
+				'n' => '\n',
+				't' => '\t',
+				'r' => '\r',
+				'\\' => '\\',
+				'\'' => '\'',
+				'\"' => '\"',
+				'0' => '\0',
+				_ => Current
+			};
+
+			if (charValue is not ('\n' or '\t' or '\r' or '\\' or  '\'' or '\"' or '\0'))
+			{
+				_diagnostics.Add($"ERROR: Invalid escape sequence '\\{Current}' at position {_position}.");
+			}
+		}
+		else if (Current != singleQuote)
+		{
+			charValue = Current;
+		}
+		else
+		{
+			_diagnostics.Add($"ERROR: Empty or invalid char literal at position {startPosition}.");
+			return Option<LiteralToken>.None;
+		}
+
+		Next();
+
+		if (Current != singleQuote)
+		{
+			Console.WriteLine($"Current : {Current}" );
+			_diagnostics.Add($"ERROR: Char literal starting at position {startPosition} is missing a closing quote.");
+			return Option<LiteralToken>.None;
+		}
+
+		Next();
+
+		var charLiteral = _code.Substring(startPosition, _position - startPosition);
+		return new LiteralToken(TokenType.CharLiteral, startPosition, charLiteral, charValue);
 	}
 
 	private Option<LiteralToken> TokenizeIfNumberLiteral()
