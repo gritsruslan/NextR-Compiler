@@ -35,6 +35,7 @@ public class StaticTokenizer
         { "float", TokenType.FloatKeyword },
         { "string", TokenType.StringKeyword },
         { "char", TokenType.CharKeyword },
+        { "double", TokenType.DoubleKeyword},
         { "break", TokenType.BreakKeyword },
         { "continue", TokenType.ContinueKeyword },
         { "const", TokenType.ConstKeyword },
@@ -51,7 +52,7 @@ public class StaticTokenizer
         { "and", TokenType.And},
         { "or", TokenType.Or},
         { "is", TokenType.Is},
-        {"struct", TokenType.StructKeyword}
+        { "struct", TokenType.StructKeyword}
     };
 
     public static Option<TokenType> GetTokenTypeIfKeyword(string tokenString)

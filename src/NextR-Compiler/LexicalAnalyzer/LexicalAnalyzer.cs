@@ -6,10 +6,9 @@ using NextR_Compiler.Tokens;
 
 namespace NextR_Compiler.LexicalAnalyzer;
 
+
 public class LexicalAnalyzer(string code)
 {
-	private readonly string _code = code;
-
 	public IReadOnlyList<string> GetDiagnostics() => _diagnostics.AsReadOnly();
 
 	private IList<string> _diagnostics = [];
@@ -34,7 +33,7 @@ public class LexicalAnalyzer(string code)
 	}
 
 	//Returns current researched char in source code
-	private char Current => _position < _code.Length ? _code[_position] : '\0';
+	private char Current => _position < code.Length ? code[_position] : '\0';
 
 	private bool IsSeparator(char chr) => _separators.Contains(chr);
 
@@ -237,7 +236,7 @@ public class LexicalAnalyzer(string code)
 
 		Next();
 
-		var charLiteral = _code.Substring(startPosition, _position - startPosition);
+		var charLiteral = code.Substring(startPosition, _position - startPosition);
 		return new LiteralToken(TokenType.CharLiteral, startPosition, charLiteral, charValue);
 	}
 
@@ -287,7 +286,9 @@ public class LexicalAnalyzer(string code)
 
 		string valueString = valueStringBuilder.ToString();
 
-		if (hasFloatMarker || hasDot)
+		if (!hasFloatMarker && hasDot)
+			return TokenizeIfDoubleLiteral(valueString, startPosition);
+		if (hasFloatMarker)
 			return TokenizeFloatLiteral(valueString, startPosition);
 		if (hasUintMarker)
 			return TokenizeUintLiteral(valueString, startPosition);
@@ -295,10 +296,13 @@ public class LexicalAnalyzer(string code)
 		return TokenizeIntLiteral(valueString, startPosition);
 	}
 
-	/*
-	private Option<LiteralToken> TokenizeIfDoubleLiteral()
-	{ }
-	*/
+	private Option<LiteralToken> TokenizeIfDoubleLiteral(string doubleString, int startPosition)
+	{
+		if(double.TryParse(doubleString,NumberStyles.Float, CultureInfo.InvariantCulture, out var intValue))
+			return new LiteralToken(TokenType.DoubleLiteral, startPosition, doubleString, intValue);
+
+		return Option<LiteralToken>.None;
+	}
 
 	private Option<LiteralToken> TokenizeFloatLiteral(string floatString, int startPosition)
 	{
@@ -352,10 +356,10 @@ public class LexicalAnalyzer(string code)
 		var currentChar = Current;
 
 		if (currentChar is not ('+' or '-' or '*' or '/' or '%' or '!' or '>' or '<' or '=') ||
-		    startPosition + 1 >= _code.Length)
+		    startPosition + 1 >= code.Length)
 			return Option<NonLiteralToken>.None;
 
-		if(!_code[startPosition + 1].Equals('='))
+		if(!code[startPosition + 1].Equals('='))
 			return Option<NonLiteralToken>.None;
 
 		var tokenType = Current switch

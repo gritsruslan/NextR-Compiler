@@ -33,6 +33,7 @@ public enum TokenType
 	FloatLiteral,
 	StringLiteral,
 	CharLiteral,
+	DoubleLiteral,
 
 	//TypeKeywords
 	IntKeyword,
@@ -40,6 +41,7 @@ public enum TokenType
 	FloatKeyword,
 	StringKeyword,
 	CharKeyword,
+	DoubleKeyword,
 
 	//Keywords
 	FuncKeyword,
