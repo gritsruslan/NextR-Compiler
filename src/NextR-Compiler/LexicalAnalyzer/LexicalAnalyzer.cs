@@ -316,7 +316,16 @@ public class LexicalAnalyzer(string code)
 
 	private Option<LiteralToken> TokenizeUintLiteral(string uintString, int startPosition)
 	{
+		string uintStringLiteral = uintString;
 
+		if (uintString.EndsWith('u'))
+			uintStringLiteral = uintStringLiteral[0..^1];
+
+		if (uint.TryParse(uintStringLiteral, out var uintValue))
+			return new LiteralToken(TokenType.UintLiteral, startPosition, uintString, uintValue);
+
+		AddConvertErrorToDiagnostics("uint", uintString, startPosition);
+		return Option<LiteralToken>.None;
 	}
 
 	private Option<LiteralToken> TokenizeIntLiteral(string intString, int startPosition)
