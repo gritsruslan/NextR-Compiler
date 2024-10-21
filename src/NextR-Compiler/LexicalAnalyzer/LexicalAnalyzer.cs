@@ -1,3 +1,4 @@
+using System.Text;
 using NextR_Compiler.Common;
 using NextR_Compiler.ExtensionMethods;
 using NextR_Compiler.Tokens;
@@ -125,7 +126,60 @@ public class LexicalAnalyzer(string code)
 
 	private Option<LiteralToken> TokenizeIfStringLiteral()
 	{
+		const char doubleQuote = '"';
+		const char backSlash = '\\';
 
+		if (Current != doubleQuote)
+			return Option<LiteralToken>.None;
+
+		var strTokenSb = new StringBuilder();
+		var startPosition = _position;
+
+		Next();
+
+		while (Current != '\0' && Current != '\n' && Current != doubleQuote)
+		{
+			if (Current == backSlash)
+			{
+				Next();
+
+				var currentEscapedToken = Current switch
+				{
+					'n' => '\n',
+					't' => '\t',
+					'r' => '\r',
+					'0' => '\0',
+					'\\' => '\\',
+					'\'' => '\'',
+					'\"' => '\"',
+					_ => Current
+				};
+
+				if (currentEscapedToken is not ('\n' or '\t' or '\\' or  '\'' or '\"' or '\r' or '\0'))
+				{
+					_diagnostics.Add($"ERROR: Invalid escape sequence '\\{Current}' at position {_position}.");
+				}
+
+				strTokenSb.Append(currentEscapedToken);
+
+				Next();
+				continue;
+			}
+
+			strTokenSb.Append(Current);
+			Next();
+		}
+
+		if (Current is '\0' or '\n')
+		{
+			_diagnostics.Add($"ERROR: String token at position {startPosition} has no closing double quote!");
+			return Option<LiteralToken>.None;
+		}
+
+		Next();
+
+		var strTokenString = strTokenSb.ToString();
+		return new LiteralToken(TokenType.StringLiteral, startPosition, strTokenString, strTokenString);
 	}
 
 	private Option<LiteralToken> TokenizeIfCharLiteral()
@@ -158,7 +212,7 @@ public class LexicalAnalyzer(string code)
 
 	}
 
-	private Option<NonLiteralToken> TokenizeIfKeyword()
+	private Option<NonLiteralToken> TokenizeIfKeyword(string tokenString, int startPosition)
 	{
 
 	}
