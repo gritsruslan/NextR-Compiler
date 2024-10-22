@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Text;
 using NextR_Compiler.Common;
 using NextR_Compiler.ExtensionMethods;
@@ -15,7 +16,7 @@ class LexicalAnalyzer(string code)
 {
 	public IReadOnlyList<string> GetDiagnostics() => _diagnostics.AsReadOnly();
 
-	private IList<string> _diagnostics = [];
+	private readonly IList<string> _diagnostics = [];
 
 	// Index of current position in code
 	private int _position;
@@ -45,6 +46,7 @@ class LexicalAnalyzer(string code)
 	private void AddConvertErrorToDiagnostics(string type, string valueString, int position ) =>
 		_diagnostics.Add($"ERROR : Can't cast token \"{valueString}\" to type {type} in position {position}");
 
+	// Skip all current whitespaces
 	private void SkipWhitespaces()
 	{
 		while(Current.IsWhitespace())
@@ -70,6 +72,7 @@ class LexicalAnalyzer(string code)
 		return resultTokens;
 	}
 
+	// Get next token in code
 	private Token NextToken()
 	{
 		SkipWhitespaces();
@@ -117,6 +120,11 @@ class LexicalAnalyzer(string code)
 			Next();
 		}
 
+		// if token is boolean literal (true, false)
+		var booleanLiteralTokenOpt = TokenizeIfBooleanLiteral(tokenString, startPosition);
+		if (booleanLiteralTokenOpt.IsSome)
+			return booleanLiteralTokenOpt.Unwrap();
+
 		//if token is keyword
 		var keywordTokenOpt = TokenizeIfKeyword(tokenString, startPosition);
 		if (keywordTokenOpt.IsSome)
@@ -128,6 +136,17 @@ class LexicalAnalyzer(string code)
 		return new NonLiteralToken(TokenType.Identifier, startPosition, tokenString);
 	}
 
+	private Option<LiteralToken> TokenizeIfBooleanLiteral(string tokenString, int startPosition)
+	{
+		return tokenString switch
+		{
+			"true" => new LiteralToken(TokenType.BooleanLiteral, startPosition, tokenString, true),
+			"false" => new LiteralToken(TokenType.BooleanLiteral, startPosition, tokenString, false),
+			_ => Option<LiteralToken>.None
+		};
+	}
+
+	// Tokenize current code token if its string literal (like "hello")
 	private Option<LiteralToken> TokenizeIfStringLiteral()
 	{
 		const char doubleQuote = '"';
@@ -147,22 +166,7 @@ class LexicalAnalyzer(string code)
 			{
 				Next();
 
-				var currentEscapedToken = Current switch
-				{
-					'n' => '\n',
-					't' => '\t',
-					'r' => '\r',
-					'0' => '\0',
-					'\\' => '\\',
-					'\'' => '\'',
-					'\"' => '\"',
-					_ => Current
-				};
-
-				if (currentEscapedToken is not ('\n' or '\t' or '\\' or  '\'' or '\"' or '\r' or '\0'))
-				{
-					_diagnostics.Add($"ERROR: Invalid escape sequence '\\{Current}' at position {_position}.");
-				}
+				var currentEscapedToken = CheckCurrentEscapeSequence();
 
 				strTokenSb.Append(currentEscapedToken);
 
@@ -186,6 +190,7 @@ class LexicalAnalyzer(string code)
 		return new LiteralToken(TokenType.StringLiteral, startPosition, strTokenString, strTokenString);
 	}
 
+	// Tokenize current char token if its char literal
 	private Option<LiteralToken> TokenizeIfCharLiteral()
 	{
 		const char singleQuote = '\'';
@@ -202,22 +207,7 @@ class LexicalAnalyzer(string code)
 		{
 			Next();
 
-			charValue = Current switch
-			{
-				'n' => '\n',
-				't' => '\t',
-				'r' => '\r',
-				'\\' => '\\',
-				'\'' => '\'',
-				'\"' => '\"',
-				'0' => '\0',
-				_ => Current
-			};
-
-			if (charValue is not ('\n' or '\t' or '\r' or '\\' or  '\'' or '\"' or '\0'))
-			{
-				_diagnostics.Add($"ERROR: Invalid escape sequence '\\{Current}' at position {_position}.");
-			}
+			charValue = CheckCurrentEscapeSequence();
 		}
 		else if (Current != singleQuote)
 		{
@@ -244,6 +234,31 @@ class LexicalAnalyzer(string code)
 		return new LiteralToken(TokenType.CharLiteral, startPosition, charLiteral, charValue);
 	}
 
+	private char CheckCurrentEscapeSequence()
+	{
+		HashSet<char> escapeSequences = ['\n', '\t', '\\', '\'', '\"', '\r', '\0'];
+
+		var currentEscapedToken = Current switch
+		{
+			'n' => '\n',
+			't' => '\t',
+			'r' => '\r',
+			'0' => '\0',
+			'\\' => '\\',
+			'\'' => '\'',
+			'\"' => '\"',
+			_ => Current
+		};
+
+		if (!escapeSequences.Contains(currentEscapedToken))
+		{
+			_diagnostics.Add($"ERROR: Invalid escape sequence '\\{Current}' at position {_position}.");
+		}
+
+		return currentEscapedToken;
+	}
+
+	// Tokenize current token if its any number literal   (like 100.0f, 52u, 0)
 	private Option<LiteralToken> TokenizeIfNumberLiteral()
 	{
 		const char uintMarker = 'u';
@@ -300,6 +315,7 @@ class LexicalAnalyzer(string code)
 		return TokenizeIntLiteral(valueString, startPosition);
 	}
 
+	// Tokenize double token literal (like 100.0)
 	private Option<LiteralToken> TokenizeIfDoubleLiteral(string doubleString, int startPosition)
 	{
 		if(double.TryParse(doubleString,NumberStyles.Float, CultureInfo.InvariantCulture, out var intValue))
@@ -308,6 +324,7 @@ class LexicalAnalyzer(string code)
 		return Option<LiteralToken>.None;
 	}
 
+	// Tokenize double token literal (like 100.0f)
 	private Option<LiteralToken> TokenizeFloatLiteral(string floatString, int startPosition)
 	{
 		string floatStringLiteral = floatString;
@@ -322,6 +339,7 @@ class LexicalAnalyzer(string code)
 		return Option<LiteralToken>.None;
 	}
 
+	// Tokenize uint token literal (like 100u)
 	private Option<LiteralToken> TokenizeUintLiteral(string uintString, int startPosition)
 	{
 		string uintStringLiteral = uintString;
@@ -336,6 +354,7 @@ class LexicalAnalyzer(string code)
 		return Option<LiteralToken>.None;
 	}
 
+	// Tokenize int token literal (like 100)
 	private Option<LiteralToken> TokenizeIntLiteral(string intString, int startPosition)
 	{
 		if(int.TryParse(intString, out var intValue))
@@ -354,12 +373,15 @@ class LexicalAnalyzer(string code)
 		return Option<NonLiteralToken>.None;
 	}
 
+	// Tokenize if current token is double operator token (like += -= %=)
 	private Option<NonLiteralToken> TokenizeIfDoubleOperator()
 	{
 		var startPosition = _position;
 		var currentChar = Current;
 
-		if (currentChar is not ('+' or '-' or '*' or '/' or '%' or '!' or '>' or '<' or '=') ||
+		HashSet<char> operators = ['+','-','*' ,'/', '%' ,'!' , '>' , '<', '='];
+
+		if (!operators.Contains(currentChar)||
 		    startPosition + 1 >= code.Length)
 			return Option<NonLiteralToken>.None;
 
@@ -377,7 +399,7 @@ class LexicalAnalyzer(string code)
 			'<' => TokenType.LessOrEqual,
 			'!' => TokenType.BoolNoEquals,
 			'=' => TokenType.BoolEquals,
-			_ => throw new Exception()
+			_ => throw new Exception("Unexpected operator") // unreachable code
 		};
 
 		Next(2);

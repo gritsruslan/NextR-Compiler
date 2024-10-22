@@ -34,6 +34,7 @@ public enum TokenType
 	StringLiteral,
 	CharLiteral,
 	DoubleLiteral,
+	BooleanLiteral,
 
 	//TypeKeywords
 	IntKeyword,
@@ -54,8 +55,6 @@ public enum TokenType
 	ConstKeyword,
 	IfKeyword,
 	ElseKeyword,
-	TrueKeyword,
-	FalseKeyword,
 	CastKeyword,
 
 	//Symbols

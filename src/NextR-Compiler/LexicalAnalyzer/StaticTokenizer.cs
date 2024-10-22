@@ -4,9 +4,9 @@ using NextR_Compiler.Tokens;
 namespace NextR_Compiler.LexicalAnalyzer;
 
 #if DEBUG
-public
+public static
 #else
-internal
+internal static
 #endif
 class StaticTokenizer
 {
@@ -58,8 +58,6 @@ public
         { "while", TokenType.WhileKeyword },
         { "loop", TokenType.LoopKeyword },
         { "var", TokenType.VarKeyword },
-        { "true", TokenType.TrueKeyword },
-        { "false", TokenType.FalseKeyword },
         { "and", TokenType.And},
         { "or", TokenType.Or},
         { "is", TokenType.Is},
