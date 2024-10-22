@@ -84,6 +84,30 @@ public class LexicalAnalyzerUnitTests
 		yield return ["\'\\0\'", '\0']; //падает
 	}
 
+
+	[Theory]
+	[MemberData(nameof(GetBooleanLiteralsData))]
+	public void Should_Correct_Recognize_Boolean_Literals(string boolString, bool value)
+	{
+		var (tokens, diagnostics) = AnalyzeCode(boolString);
+
+		diagnostics.Should().BeEmpty();
+		tokens.Count.Should().Be(1);
+
+		var token = tokens.First() as LiteralToken;
+
+		token.Should().NotBeNull();
+		token!.Type.Should().Be(TokenType.BooleanLiteral);
+		token!.ValueString.Should().Be(boolString);
+		token!.Value.Should().Be(value);
+	}
+
+	public static IEnumerable<object[]> GetBooleanLiteralsData()
+	{
+		yield return ["true", true];
+		yield return ["false", false];
+	}
+
 	[Theory]
 	[MemberData(nameof(GetIntLiterals))]
 	public void Should_Correct_Recognize_Int_Literals(string intString, int value)
