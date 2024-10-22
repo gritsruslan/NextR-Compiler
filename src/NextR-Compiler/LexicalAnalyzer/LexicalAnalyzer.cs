@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Text;
 using NextR_Compiler.Common;
 using NextR_Compiler.ExtensionMethods;
@@ -119,6 +120,11 @@ class LexicalAnalyzer(string code)
 			Next();
 		}
 
+		// if token is boolean literal (true, false)
+		var booleanLiteralTokenOpt = TokenizeIfBooleanLiteral(tokenString, startPosition);
+		if (booleanLiteralTokenOpt.IsSome)
+			return booleanLiteralTokenOpt.Unwrap();
+
 		//if token is keyword
 		var keywordTokenOpt = TokenizeIfKeyword(tokenString, startPosition);
 		if (keywordTokenOpt.IsSome)
@@ -128,6 +134,16 @@ class LexicalAnalyzer(string code)
 
 		//other tokens marked as identifiers
 		return new NonLiteralToken(TokenType.Identifier, startPosition, tokenString);
+	}
+
+	private Option<LiteralToken> TokenizeIfBooleanLiteral(string tokenString, int startPosition)
+	{
+		return tokenString switch
+		{
+			"true" => new LiteralToken(TokenType.BooleanLiteral, startPosition, tokenString, true),
+			"false" => new LiteralToken(TokenType.BooleanLiteral, startPosition, tokenString, false),
+			_ => Option<LiteralToken>.None
+		};
 	}
 
 	// Tokenize current code token if its string literal (like "hello")

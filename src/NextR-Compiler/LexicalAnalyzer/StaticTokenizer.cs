@@ -58,8 +58,6 @@ public
         { "while", TokenType.WhileKeyword },
         { "loop", TokenType.LoopKeyword },
         { "var", TokenType.VarKeyword },
-        { "true", TokenType.TrueKeyword },
-        { "false", TokenType.FalseKeyword },
         { "and", TokenType.And},
         { "or", TokenType.Or},
         { "is", TokenType.Is},
