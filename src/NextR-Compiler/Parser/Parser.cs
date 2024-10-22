@@ -2,33 +2,33 @@ using NextR_Compiler.Tokens;
 
 namespace NextR_Compiler.Parser;
 
-public abstract class ExpressionBase
+public abstract class Expression
 {
 	public abstract TokenType Type { get; }
 }
 
-public class NumberExpression(LiteralToken number) : ExpressionBase
+public class NumberExpression(LiteralToken number) : Expression
 {
-	public LiteralToken NumberToken { get; } = number;
-	public override TokenType Type => NumberToken.Type;
+	public LiteralToken Token { get; } = number;
+	public override TokenType Type => Token.Type;
 }
 
 public sealed class BinaryExpression(
-	ExpressionBase left,
+	Expression left,
 	NonLiteralToken operation,
-	ExpressionBase right ) : ExpressionBase
+	Expression right ) : Expression
 {
 
-	public ExpressionBase Left { get; } = left;
+	public Expression Left { get; } = left;
 	public NonLiteralToken Operator { get; } = operation;
-	public ExpressionBase Right { get; } = right;
+	public Expression Right { get; } = right;
 
 	public override TokenType Type => TokenType.BinaryExpression;
 }
 
-public sealed class SyntaxTree(ExpressionBase root)
+public sealed class SyntaxTree(Expression root)
 {
-	public ExpressionBase Root { get; } = root;
+	public Expression Root { get; } = root;
 }
 
 public sealed class Parser(List<Token> tokens, List<string> diagnostics)
@@ -72,7 +72,7 @@ public sealed class Parser(List<Token> tokens, List<string> diagnostics)
 		return new SyntaxTree(expression);
 	}
 
-	private ExpressionBase ParseExpression()
+	private Expression ParseExpression()
 	{
 		var left = ParseTerm();
 
@@ -86,7 +86,7 @@ public sealed class Parser(List<Token> tokens, List<string> diagnostics)
 		return left;
 	}
 
-	private ExpressionBase ParseTerm()
+	private Expression ParseTerm()
 	{
 		var left = ParsePrimaryExpression();
 
@@ -100,25 +100,44 @@ public sealed class Parser(List<Token> tokens, List<string> diagnostics)
 		return left;
 	}
 
-	private ExpressionBase ParsePrimaryExpression()
+	private Expression ParsePrimaryExpression()
 	{
+		if (Current.Type == TokenType.OpenParenthesis)
+		{
+			NextToken();
+
+			var expression = ParseExpression();
+
+			if (Current.Type == TokenType.CloseParenthesis)
+			{
+				NextToken();
+			}
+			else
+			{
+				_diagnostics.Add($"Error: Expected ')' but found {Current.Type}");
+			}
+
+			return expression;
+		}
+
 		var intToken = Match(TokenType.IntLiteral);
-		return new NumberExpression( (LiteralToken) intToken);
+		return new NumberExpression((LiteralToken)intToken);
 	}
+
 }
 
-public class Evaluator
+public sealed class Evaluator
 {
-	public int Evaluate(ExpressionBase expression)
+	public int EvaluateNum(Expression expression)
 	{
 		if(expression is NumberExpression numberExpression)
-			return (int) numberExpression.NumberToken.Value;
+			return (int) numberExpression.Token.Value;
 
 		var binaryExpression = expression as BinaryExpression;
 
-		var left = Evaluate(binaryExpression!.Left);
+		var left = EvaluateNum(binaryExpression!.Left);
 		var operatorToken = binaryExpression!.Operator;
-		var right = Evaluate(binaryExpression!.Right);
+		var right = EvaluateNum(binaryExpression!.Right);
 
 		int result = operatorToken.Type switch
 		{
@@ -131,5 +150,4 @@ public class Evaluator
 
 		return result;
 	}
-
 }
