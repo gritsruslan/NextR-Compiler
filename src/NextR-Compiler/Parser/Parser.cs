@@ -74,17 +74,32 @@ public sealed class Parser(List<Token> tokens, List<string> diagnostics)
 
 	private ExpressionBase ParseExpression()
 	{
-		var left = ParsePrimaryExpression();
+		var left = ParseTerm();
 
-		while (Current.Type is TokenType.Plus or TokenType.Minus or TokenType.Divide or TokenType.Multiply)
+		while (Current.Type is TokenType.Plus or TokenType.Minus)
 		{
 			var operatorToken = NextToken();
-			var right = ParsePrimaryExpression();
+			var right = ParseTerm();
 			left = new BinaryExpression(left, (NonLiteralToken) operatorToken, right);
 		}
 
 		return left;
 	}
+
+	private ExpressionBase ParseTerm()
+	{
+		var left = ParsePrimaryExpression();
+
+		while (Current.Type is TokenType.Multiply or TokenType.Divide)
+		{
+			var operatorToken = NextToken();
+			var right = ParsePrimaryExpression();
+			left = new BinaryExpression(left, (NonLiteralToken)operatorToken, right);
+		}
+
+		return left;
+	}
+
 	private ExpressionBase ParsePrimaryExpression()
 	{
 		var intToken = Match(TokenType.IntLiteral);
